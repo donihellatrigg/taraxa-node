@@ -138,7 +138,7 @@ std::pair<bool, std::unordered_set<blk_hash_t>> ExtSyncingPacketHandler::checkDa
     const DagBlock &block) const {
   std::unordered_set<blk_hash_t> missing_blks;
 
-  if (dag_blk_mgr_->getDagBlock(block.getHash())) {
+  if (dag_blk_mgr_->isDagBlockKnown(block.getHash())) {
     // The DAG block exist
     return std::make_pair(true, missing_blks);
   }

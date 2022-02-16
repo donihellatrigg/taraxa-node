@@ -208,6 +208,7 @@ class DagManager : public std::enable_shared_from_this<DagManager> {
                 bool finalized = false);
   void worker();
   std::pair<blk_hash_t, std::vector<blk_hash_t>> getFrontier() const;  // return pivot and tips
+  void updateFrontier();
   std::atomic<level_t> max_level_ = 0;
   mutable std::shared_mutex mutex_;
   mutable std::shared_mutex order_dag_blocks_mutex_;

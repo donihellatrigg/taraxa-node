@@ -28,7 +28,7 @@ class StatusPacketHandler : public ExtSyncingPacketHandler {
                             size_t pbft_previous_round_next_votes_size);
   void syncPbftNextVotes(uint64_t pbft_round, size_t pbft_previous_round_next_votes_size);
 
-  static constexpr uint16_t INITIAL_STATUS_PACKET_ITEM_COUNT = 10;
+  static constexpr uint16_t INITIAL_STATUS_PACKET_ITEM_COUNT = 11;
   const uint64_t conf_network_id_;
 
   std::shared_ptr<NextVotesManager> next_votes_mgr_;

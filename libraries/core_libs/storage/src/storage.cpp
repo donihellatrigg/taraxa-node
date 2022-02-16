@@ -18,12 +18,13 @@ static constexpr uint16_t DAG_BLOCKS_POS_IN_PERIOD_DATA = 2;
 static constexpr uint16_t TRANSACTIONS_POS_IN_PERIOD_DATA = 3;
 
 DbStorage::DbStorage(fs::path const& path, uint32_t db_snapshot_each_n_pbft_block, uint32_t max_open_files,
-                     uint32_t db_max_snapshots, uint32_t db_revert_to_period, addr_t node_addr, bool rebuild,
-                     bool rebuild_columns)
+                     uint32_t db_max_snapshots, uint32_t db_revert_to_period, addr_t node_addr,
+                     uint64_t light_node_history, bool rebuild, bool rebuild_columns)
     : path_(path),
       handles_(Columns::all.size()),
       db_snapshot_each_n_pbft_block_(db_snapshot_each_n_pbft_block),
-      db_max_snapshots_(db_max_snapshots) {
+      db_max_snapshots_(db_max_snapshots),
+      light_node_history_(light_node_history) {
   db_path_ = (path / db_dir);
   state_db_path_ = (path / state_db_dir);
 
@@ -451,6 +452,12 @@ std::optional<SortitionParamsChange> DbStorage::getParamsChangeForPeriod(uint64_
   return SortitionParamsChange::from_rlp(dev::RLP(it->value().ToString()));
 }
 
+void DbStorage::clearPeriodDataHistory(uint64_t period, bool force) {
+  if (light_node_history_ > 0 && (period % light_node_history_ == 0 || force)) {
+    db_->DeleteRange(write_options_, handle(Columns::period_data), 0, toSlice(period - light_node_history_));
+  }
+}
+
 void DbStorage::savePeriodData(const SyncBlock& sync_block, Batch& write_batch) {
   uint64_t period = sync_block.pbft_blk->getPeriod();
   addPbftBlockPeriodToBatch(period, sync_block.pbft_blk->getBlockHash(), write_batch);
@@ -565,11 +572,11 @@ std::shared_ptr<Transaction> DbStorage::getTransaction(trx_hash_t const& hash) {
   auto res = getTransactionPeriod(hash);
   if (res) {
     auto period_data = getPeriodDataRaw(res->first);
-    // DB is corrupted if status point to missing or incorrect transaction
-    assert(period_data.size() > 0);
-    auto period_data_rlp = dev::RLP(period_data);
-    auto transaction_data = period_data_rlp[TRANSACTIONS_POS_IN_PERIOD_DATA];
-    return std::make_shared<Transaction>(transaction_data[res->second]);
+    if (period_data.size() > 0) {
+      auto period_data_rlp = dev::RLP(period_data);
+      auto transaction_data = period_data_rlp[TRANSACTIONS_POS_IN_PERIOD_DATA];
+      return std::make_shared<Transaction>(transaction_data[res->second]);
+    }
   }
   return nullptr;
 }

@@ -39,7 +39,7 @@ void DagBlockManager::stop() {
 
 bool DagBlockManager::isDagBlockKnown(blk_hash_t const &hash) {
   auto known = seen_blocks_.count(hash);
-  if (!known) return getDagBlock(hash) != nullptr;
+  if (!known) return db_->dagBlockInDb(hash);
   return true;
 }
 

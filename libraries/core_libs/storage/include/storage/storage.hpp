@@ -94,7 +94,7 @@ class DbStorage : public std::enable_shared_from_this<DbStorage> {
     // do not change/move
     COLUMN(default_column);
     // Contains full data for an executed PBFT block including PBFT block, cert votes, dag blocks and transactions
-    COLUMN(period_data);
+    COLUMN_W_COMP(period_data, getIntComparator<uint64_t>());
     COLUMN(dag_blocks);
     COLUMN(dag_blocks_index);
     COLUMN(transactions);
@@ -148,6 +148,7 @@ class DbStorage : public std::enable_shared_from_this<DbStorage> {
   bool snapshot_enable_ = true;
   uint32_t db_max_snapshots_ = 0;
   std::set<uint64_t> snapshots_;
+  uint64_t light_node_history_ = 0;
 
   bool minor_version_changed_ = false;
 
@@ -161,7 +162,7 @@ class DbStorage : public std::enable_shared_from_this<DbStorage> {
 
   explicit DbStorage(fs::path const& base_path, uint32_t db_snapshot_each_n_pbft_block = 0, uint32_t max_open_files = 0,
                      uint32_t db_max_snapshots = 0, uint32_t db_revert_to_period = 0, addr_t node_addr = addr_t(),
-                     bool rebuild = false, bool rebuild_columns = false);
+                     uint64_t light_node_history = 0, bool rebuild = false, bool rebuild_columns = false);
   ~DbStorage();
 
   auto const& path() const { return path_; }
@@ -181,9 +182,11 @@ class DbStorage : public std::enable_shared_from_this<DbStorage> {
 
   // Period data
   void savePeriodData(const SyncBlock& sync_block, Batch& write_batch);
+  void clearPeriodDataHistory(uint64_t period, bool force = false);
   dev::bytes getPeriodDataRaw(uint64_t period) const;
   std::optional<PbftBlock> getPbftBlock(uint64_t period) const;
   blk_hash_t getPeriodBlockHash(uint64_t period) const;
+  uint64_t getLightNodeHistory() const { return light_node_history_; }
 
   // DAG
   void saveDagBlock(DagBlock const& blk, Batch* write_batch_p = nullptr);

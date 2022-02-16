@@ -252,6 +252,12 @@ void TaraxaCapability::onConnect(std::weak_ptr<dev::p2p::Session> session, u256 
     LOG(log_wr_) << "Node " << node_id << " connection dropped - malicious node";
     return;
   }
+  if (syncing_state_->is_deep_pbft_syncing() && peers_state_->is_peer_light_node(node_id)) {
+    session_p->disconnect(dev::p2p::UserReason);
+    LOG(log_wr_) << "Node " << node_id << " connection dropped - light node while syncing";
+    return;
+  }
+
   peers_state_->addPendingPeer(node_id);
   LOG(log_nf_) << "Node " << node_id << " connected";
 

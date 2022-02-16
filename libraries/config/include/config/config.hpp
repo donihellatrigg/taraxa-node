@@ -28,6 +28,7 @@ struct NodeConfig {
 
 struct NetworkConfig {
   static constexpr uint16_t kBlacklistTimeoutDefaultInSeconds = 600;
+  static constexpr uint16_t kLightNodeTimeoutDefaultInSeconds = 600;
 
   std::string json_file_name;
   bool network_is_boot_node = 0;
@@ -46,6 +47,7 @@ struct NetworkConfig {
   uint16_t network_num_threads = std::max(uint(1), uint(std::thread::hardware_concurrency() / 2));
   uint16_t network_packets_processing_threads = 14;
   uint16_t network_peer_blacklist_timeout = kBlacklistTimeoutDefaultInSeconds;
+  uint16_t network_peer_light_node_timeout = kLightNodeTimeoutDefaultInSeconds;
   bool disable_peer_blacklist = false;
   uint16_t deep_syncing_threshold = 10;
 };
@@ -71,6 +73,9 @@ struct TestParamsConfig {
 };
 
 struct FullNodeConfig {
+  static const uint32_t kDagPeriodLimit = 1000;  // Any non finalized dag block with a propose level smaller by
+                                                 // kDagPeriodLimit of the current period should be ignored
+
   FullNodeConfig() = default;
   // The reason of using Json::Value as a union is that in the tests
   // there are attempts to pass char const* to this constructor, which
@@ -92,6 +97,7 @@ struct FullNodeConfig {
   ChainConfig chain = ChainConfig::predefined();
   state_api::Opts opts_final_chain;
   std::vector<logger::Config> log_configs;
+  uint64_t light_node_history = 0;  // Number of blocks to keep in history for a light node, 0 - full node
 
   auto net_file_path() const { return data_path / "net"; }
 

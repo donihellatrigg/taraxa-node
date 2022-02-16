@@ -134,4 +134,35 @@ bool PeersState::is_peer_malicious(const dev::p2p::NodeID& peer_id) {
   return false;
 }
 
+void PeersState::set_peer_light_node(const dev::p2p::NodeID& peer_id) {
+  light_node_peers_.emplace(peer_id, std::chrono::steady_clock::now());
+}
+
+bool PeersState::is_peer_light_node(const dev::p2p::NodeID& peer_id) {
+  if (conf_.disable_peer_blacklist) {
+    return false;
+  }
+
+  // Peers are marked light nodes for the time defined in conf_.network_peer_light_node_timeout
+  if (auto i = light_node_peers_.get(peer_id); i.second) {
+    if (conf_.network_peer_light_node_timeout == 0 ||
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - i.first).count() <=
+            conf_.network_peer_light_node_timeout) {
+      return true;
+    } else {
+      light_node_peers_.erase(peer_id);
+    }
+  }
+
+  // Delete any expired item from the list
+  if (conf_.network_peer_blacklist_timeout > 0) {
+    light_node_peers_.erase([this](const std::chrono::steady_clock::time_point& value) {
+      return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - value).count() >
+             conf_.network_peer_light_node_timeout;
+    });
+  }
+
+  return false;
+}
+
 }  // namespace taraxa::network::tarcap

@@ -133,6 +133,8 @@ FullNodeConfig::FullNodeConfig(Json::Value const &string_or_object, Json::Value 
   network.network_packets_processing_threads = getConfigDataAsUInt(root, {"network_packets_processing_threads"});
   network.network_peer_blacklist_timeout = getConfigDataAsUInt(root, {"network_peer_blacklist_timeout"}, true,
                                                                NetworkConfig::kBlacklistTimeoutDefaultInSeconds);
+  network.network_peer_light_node_timeout = getConfigDataAsUInt(root, {"network_peer_light_node_timeout"}, true,
+                                                                NetworkConfig::kLightNodeTimeoutDefaultInSeconds);
   network.disable_peer_blacklist = getConfigDataAsBoolean(root, {"disable_peer_blacklist"}, true, false);
   network.deep_syncing_threshold =
       getConfigDataAsUInt(root, {"deep_syncing_threshold"}, true, network.deep_syncing_threshold);
@@ -142,6 +144,13 @@ FullNodeConfig::FullNodeConfig(Json::Value const &string_or_object, Json::Value 
     node.ip = getConfigDataAsString(item, {"ip"});
     node.udp_port = getConfigDataAsUInt(item, {"udp_port"});
     network.network_boot_nodes.push_back(node);
+  }
+
+  light_node_history = getConfigDataAsUInt(root, {"light_node_history"}, true, 0);
+
+  // Min history for light node is 110% of kDagPeriodLimit to avoid any race condition around the kDagPeriodLimit
+  if (light_node_history > 0 && light_node_history < kDagPeriodLimit * 1.1) {
+    light_node_history = kDagPeriodLimit * 1.1;
   }
 
   // Rpc config

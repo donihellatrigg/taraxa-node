@@ -42,10 +42,22 @@ class PeersState {
   void set_peer_malicious(const dev::p2p::NodeID& peer_id);
 
   /**
+   * @brief Marks peer as light node
+   * @param peer_id
+   */
+  void set_peer_light_node(const dev::p2p::NodeID& peer_id);
+
+  /**
    * @brief Checks if peer is in malicious peers list
    * @return returns true if peer is in malicious peer list
    */
   bool is_peer_malicious(const dev::p2p::NodeID& peer_id);
+
+  /**
+   * @brief Checks if peer is in light node peers list
+   * @return returns true if peer is in light node peer list
+   */
+  bool is_peer_light_node(const dev::p2p::NodeID& peer_id);
 
  public:
   const std::weak_ptr<dev::p2p::Host> host_;
@@ -57,6 +69,7 @@ class PeersState {
   std::unordered_map<dev::p2p::NodeID, std::shared_ptr<TaraxaPeer>> pending_peers_;
 
   ThreadSafeMap<dev::p2p::NodeID, std::chrono::steady_clock::time_point> malicious_peers_;
+  ThreadSafeMap<dev::p2p::NodeID, std::chrono::steady_clock::time_point> light_node_peers_;
   const NetworkConfig conf_;
 };
 
