@@ -139,10 +139,6 @@ void PeersState::set_peer_light_node(const dev::p2p::NodeID& peer_id) {
 }
 
 bool PeersState::is_peer_light_node(const dev::p2p::NodeID& peer_id) {
-  if (conf_.disable_peer_blacklist) {
-    return false;
-  }
-
   // Peers are marked light nodes for the time defined in conf_.network_peer_light_node_timeout
   if (auto i = light_node_peers_.get(peer_id); i.second) {
     if (conf_.network_peer_light_node_timeout == 0 ||
@@ -155,7 +151,7 @@ bool PeersState::is_peer_light_node(const dev::p2p::NodeID& peer_id) {
   }
 
   // Delete any expired item from the list
-  if (conf_.network_peer_blacklist_timeout > 0) {
+  if (conf_.network_peer_light_node_timeout > 0) {
     light_node_peers_.erase([this](const std::chrono::steady_clock::time_point& value) {
       return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - value).count() >
              conf_.network_peer_light_node_timeout;

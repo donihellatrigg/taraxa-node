@@ -24,10 +24,7 @@ StatusPacketHandler::StatusPacketHandler(
 
 void StatusPacketHandler::process(const PacketData& packet_data, const std::shared_ptr<TaraxaPeer>& peer) {
   const auto item_count = packet_data.rlp_.itemCount();
-  // TODO: Temporarily support initial status message with light node status and without, remove later and support new
-  // format
-  bool initial_status =
-      (item_count == INITIAL_STATUS_PACKET_ITEM_COUNT || item_count == INITIAL_STATUS_PACKET_ITEM_COUNT - 1);
+  bool initial_status = item_count == INITIAL_STATUS_PACKET_ITEM_COUNT;
 
   // Important !!! Use only "selected_peer" and not "peer" in this function as "peer" might be nullptr
   auto selected_peer = peer;
@@ -186,13 +183,12 @@ bool StatusPacketHandler::sendStatus(const dev::p2p::NodeID& node_id, bool initi
     auto pbft_previous_round_next_votes_size = next_votes_mgr_->getNextVotesWeight();
 
     if (initial) {
-      success =
-          sealAndSend(node_id, StatusPacket,
-                      std::move(dev::RLPStream(INITIAL_STATUS_PACKET_ITEM_COUNT - 1)
-                                << conf_network_id_ << dag_max_level << dag_mgr_->get_genesis() << pbft_chain_size
-                                << syncing_state_->is_pbft_syncing() << pbft_round
-                                << pbft_previous_round_next_votes_size << TARAXA_MAJOR_VERSION << TARAXA_MINOR_VERSION
-                                << TARAXA_PATCH_VERSION /* << db_->getLightNodeHistory()*/));
+      success = sealAndSend(node_id, StatusPacket,
+                            std::move(dev::RLPStream(INITIAL_STATUS_PACKET_ITEM_COUNT)
+                                      << conf_network_id_ << dag_max_level << dag_mgr_->get_genesis() << pbft_chain_size
+                                      << syncing_state_->is_pbft_syncing() << pbft_round
+                                      << pbft_previous_round_next_votes_size << TARAXA_MAJOR_VERSION
+                                      << TARAXA_MINOR_VERSION << TARAXA_PATCH_VERSION << db_->getLightNodeHistory()));
     } else {
       success = sealAndSend(
           node_id, StatusPacket,

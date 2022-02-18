@@ -73,8 +73,9 @@ struct TestParamsConfig {
 };
 
 struct FullNodeConfig {
-  static const uint32_t kDagPeriodLimit = 1000;  // Any non finalized dag block with a propose level smaller by
-                                                 // kDagPeriodLimit of the current period should be ignored
+  static const uint32_t kDagExpiryPeriodLimit = 1000;  // Any non finalized dag block with a propose period smaller by
+                                                       // kDagExpiryPeriodLimit than the current period is considered
+                                                       // expired and it should be ignored or removed from DAG
 
   FullNodeConfig() = default;
   // The reason of using Json::Value as a union is that in the tests
@@ -97,7 +98,7 @@ struct FullNodeConfig {
   ChainConfig chain = ChainConfig::predefined();
   state_api::Opts opts_final_chain;
   std::vector<logger::Config> log_configs;
-  uint64_t light_node_history = 0;  // Number of blocks to keep in history for a light node, 0 - full node
+  uint64_t light_node_history = 0;  // Number of periods to keep in history for a light node, 0 - full node
 
   auto net_file_path() const { return data_path / "net"; }
 

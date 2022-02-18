@@ -148,9 +148,10 @@ FullNodeConfig::FullNodeConfig(Json::Value const &string_or_object, Json::Value 
 
   light_node_history = getConfigDataAsUInt(root, {"light_node_history"}, true, 0);
 
-  // Min history for light node is 110% of kDagPeriodLimit to avoid any race condition around the kDagPeriodLimit
-  if (light_node_history > 0 && light_node_history < kDagPeriodLimit * 1.1) {
-    light_node_history = kDagPeriodLimit * 1.1;
+  // Min history for light node is 110% of kDagExpiryPeriodLimit to avoid any race condition around the
+  // kDagExpiryPeriodLimit
+  if (light_node_history > 0 && light_node_history < kDagExpiryPeriodLimit * 1.1) {
+    light_node_history = kDagExpiryPeriodLimit * 1.1;
   }
 
   // Rpc config
