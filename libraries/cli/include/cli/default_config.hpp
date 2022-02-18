@@ -275,7 +275,7 @@ const char *default_json = R"foo({
         },
         "execution_options": {
           "disable_gas_fee": false,
-          "disable_nonce_check": true
+          "disable_nonce_check": false
         },
         "genesis_balances": {
           "0274cfffea9fa850e54c93a23042f12a87358a82": "0x141e8d17",
