@@ -592,10 +592,8 @@ TEST_F(PbftManagerTest, pbft_manager_run_multi_nodes) {
   auto node3_addr = nodes[2]->getAddress();
 
   // create a transaction transfer coins from node1 to node2
-  auto coins_value2 = val_t(100);
-  auto gas_price = val_t(2);
-  auto data = bytes();
-  Transaction trx_master_boot_node_to_node2(0, coins_value2, gas_price, TEST_TX_GAS_LIMIT, data,
+  const auto gas_price = val_t(2);
+  Transaction trx_master_boot_node_to_node2(0, val_t(100), gas_price, TEST_TX_GAS_LIMIT, bytes(),
                                             nodes[0]->getSecretKey(), node2_addr);
   // broadcast trx and insert
   nodes[0]->getTransactionManager()->insertTransaction(trx_master_boot_node_to_node2);
@@ -607,8 +605,7 @@ TEST_F(PbftManagerTest, pbft_manager_run_multi_nodes) {
   wait_for_balances(nodes, expected_balances1);
 
   // create a transaction transfer coins from node1 to node3
-  auto coins_value3 = val_t(1000);
-  Transaction trx_master_boot_node_to_node3(1, coins_value3, gas_price, TEST_TX_GAS_LIMIT, data,
+  Transaction trx_master_boot_node_to_node3(1, val_t(1000), gas_price, TEST_TX_GAS_LIMIT, bytes(),
                                             nodes[0]->getSecretKey(), node3_addr);
   // broadcast trx and insert
   nodes[0]->getTransactionManager()->insertTransaction(trx_master_boot_node_to_node3);
