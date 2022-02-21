@@ -422,7 +422,7 @@ void DagManager::addDagBlock(DagBlock const &blk, SharedTransactions &&trxs, boo
         }
         const auto proposal_period = dag_blk_mgr_->getProposalPeriod(blk.getLevel());
         assert(proposal_period.second);
-        if (proposal_period.first < period_ - FullNodeConfig::kDagExpiryPeriodLimit) {
+        if (proposal_period.first + FullNodeConfig::kDagExpiryPeriodLimit < period_) {
           LOG(log_nf_) << "Dropping old block: " << blk.getHash() << ". Proposal period: " << proposal_period.first
                        << ". Current period: " << period_ << ". Block level: " << blk.getLevel();
           return;
@@ -667,7 +667,7 @@ bool DagManager::validateBlockNotExpired(const std::shared_ptr<DagBlock> &dag_bl
 
   const auto proposal_period = dag_blk_mgr_->getProposalPeriod(dag_block->getLevel());
   assert(proposal_period.second);
-  if (block_points_to_expired_block || proposal_period.first < period_ - FullNodeConfig::kDagExpiryPeriodLimit) {
+  if (block_points_to_expired_block || proposal_period.first + FullNodeConfig::kDagExpiryPeriodLimit < period_) {
     LOG(log_nf_) << "Dropping expired block in setDagBlockOrder: " << blk_hash
                  << ". Proposal period: " << proposal_period.first << ". Current period: " << period_
                  << ". Block level: " << dag_block->getLevel();
