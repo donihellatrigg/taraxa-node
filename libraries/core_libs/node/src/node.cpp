@@ -55,26 +55,28 @@ void FullNode::init() {
   }
   {
     if (conf_.test_params.rebuild_db) {
-      old_db_ = std::make_shared<DbStorage>(conf_.db_path, conf_.test_params.db_snapshot_each_n_pbft_block,
-                                            conf_.test_params.db_max_open_files, conf_.test_params.db_max_snapshots,
-                                            conf_.test_params.db_revert_to_period, node_addr, true);
+      old_db_ =
+          std::make_shared<DbStorage>(conf_.db_path, conf_.test_params.db_snapshot_each_n_pbft_block,
+                                      conf_.test_params.db_max_open_files, conf_.test_params.db_max_snapshots,
+                                      conf_.test_params.db_revert_to_period, node_addr, conf_.light_node_history, true);
     }
 
     db_ = std::make_shared<DbStorage>(conf_.db_path, conf_.test_params.db_snapshot_each_n_pbft_block,
                                       conf_.test_params.db_max_open_files, conf_.test_params.db_max_snapshots,
-                                      conf_.test_params.db_revert_to_period, node_addr, false,
+                                      conf_.test_params.db_revert_to_period, node_addr, conf_.light_node_history, false,
                                       conf_.test_params.rebuild_db_columns);
 
     if (db_->hasMinorVersionChanged()) {
       LOG(log_si_) << "Minor DB version has changed. Rebuilding Db";
       conf_.test_params.rebuild_db = true;
       db_ = nullptr;
-      old_db_ = std::make_shared<DbStorage>(conf_.db_path, conf_.test_params.db_snapshot_each_n_pbft_block,
-                                            conf_.test_params.db_max_open_files, conf_.test_params.db_max_snapshots,
-                                            conf_.test_params.db_revert_to_period, node_addr, true);
+      old_db_ =
+          std::make_shared<DbStorage>(conf_.db_path, conf_.test_params.db_snapshot_each_n_pbft_block,
+                                      conf_.test_params.db_max_open_files, conf_.test_params.db_max_snapshots,
+                                      conf_.test_params.db_revert_to_period, node_addr, conf_.light_node_history, true);
       db_ = std::make_shared<DbStorage>(conf_.db_path, conf_.test_params.db_snapshot_each_n_pbft_block,
                                         conf_.test_params.db_max_open_files, conf_.test_params.db_max_snapshots,
-                                        conf_.test_params.db_revert_to_period, node_addr);
+                                        conf_.test_params.db_revert_to_period, node_addr, conf_.light_node_history);
     }
 
     if (db_->getNumDagBlocks() == 0) {

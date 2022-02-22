@@ -955,12 +955,14 @@ TEST_F(FullNodeTest, sync_two_nodes1) {
   auto num_vertices1 = nodes[0]->getDagManager()->getNumVerticesInDag();
   auto num_vertices2 = nodes[1]->getDagManager()->getNumVerticesInDag();
   for (unsigned i = 0; i < SYNC_TIMEOUT; i++) {
-    if (num_vertices1.first > 3 && num_vertices2.first > 3 && num_vertices1 == num_vertices2) break;
+    if (nodes[0]->getTransactionManager()->getTransactionPoolSize() == 0 &&
+        nodes[1]->getTransactionManager()->getTransactionPoolSize() == 0 && num_vertices1 == num_vertices2)
+      break;
     taraxa::thisThreadSleepForMilliSeconds(500);
     num_vertices1 = nodes[0]->getDagManager()->getNumVerticesInDag();
     num_vertices2 = nodes[1]->getDagManager()->getNumVerticesInDag();
   }
-  EXPECT_GE(num_vertices1.first, 3);
+  EXPECT_GE(num_vertices1.first, 2);
   EXPECT_EQ(num_vertices1, num_vertices2);
 }
 
