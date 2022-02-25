@@ -1546,6 +1546,32 @@ TEST_F(FullNodeTest, transaction_validation) {
   EXPECT_FALSE(nodes[0]->getTransactionManager()->insertTransaction(trx).first);
 }
 
+TEST_F(FullNodeTest, light_node) {
+  auto node_cfgs = make_node_cfgs<20, true>(2);
+  node_cfgs[0].light_node_history = 10;
+  auto nodes = launch_nodes(node_cfgs);
+  uint64_t nonce = 0;
+  while (nodes[0]->getPbftChain()->getPbftChainSize() < 40) {
+    Transaction dummy_trx(nonce++, 0, 2, 100000, bytes(), nodes[0]->getSecretKey(), nodes[0]->getAddress());
+    // broadcast dummy transaction
+    nodes[0]->getTransactionManager()->insertTransaction(dummy_trx);
+    thisThreadSleepForMilliSeconds(200);
+  }
+  EXPECT_HAPPENS({10s, 1s}, [&](auto &ctx) {
+    // Verify full node and light node sync without any issues
+    WAIT_EXPECT_EQ(ctx, nodes[0]->getPbftChain()->getPbftChainSize(), nodes[1]->getPbftChain()->getPbftChainSize())
+  });
+  uint32_t min_period_in_db = 0;
+  for (uint64_t i = 0; i < nodes[0]->getPbftChain()->getPbftChainSize(); i++) {
+    if (nodes[0]->getDB()->getPeriodDataRaw(i).size() > 0) {
+      min_period_in_db = i;
+      break;
+    }
+  }
+  // Verify light node stores only expected number of period_data
+  EXPECT_GT(min_period_in_db, nodes[0]->getPbftChain()->getPbftChainSize() - node_cfgs[0].light_node_history * 1.1);
+}
+
 }  // namespace taraxa::core_tests
 
 int main(int argc, char **argv) {

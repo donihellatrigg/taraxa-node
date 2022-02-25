@@ -454,8 +454,11 @@ std::optional<SortitionParamsChange> DbStorage::getParamsChangeForPeriod(uint64_
 
 void DbStorage::clearPeriodDataHistory(uint64_t period, bool force) {
   // Actual history size will be between 100% and 110% of light_node_history_ to avoid deleting on every period
-  if (light_node_history_ > 0 && ((period % (light_node_history_ / 10) == 0) || force)) {
-    db_->DeleteRange(write_options_, handle(Columns::period_data), 0, toSlice(period - light_node_history_));
+  if (light_node_history_ > 0 && ((period % (light_node_history_ / 10) == 0) || force) &&
+      period >= light_node_history_) {
+    const uint64_t start = 0;
+    db_->DeleteRange(write_options_, handle(Columns::period_data), toSlice(start),
+                     toSlice(period - light_node_history_));
   }
 }
 

@@ -148,7 +148,7 @@ class DbStorage : public std::enable_shared_from_this<DbStorage> {
   bool snapshot_enable_ = true;
   uint32_t db_max_snapshots_ = 0;
   std::set<uint64_t> snapshots_;
-  uint64_t light_node_history_ = 0;
+  const uint64_t light_node_history_ = 0;
 
   bool minor_version_changed_ = false;
 

@@ -52,7 +52,7 @@ void StatusPacketHandler::process(const PacketData& packet_data, const std::shar
     auto const node_major_version = (*it++).toInt<unsigned>();
     auto const node_minor_version = (*it++).toInt<unsigned>();
     auto const node_patch_version = (*it++).toInt<unsigned>();
-    uint64_t node_history = (*it++).toInt<uint64_t>();
+    auto const node_history = (*it++).toInt<uint64_t>();
 
     // If this is a light node and it cannot serve our sync request disconnect from it
     if (node_history > 0) {
